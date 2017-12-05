@@ -879,6 +879,33 @@ accumulate(op, x::AbstractVector) = accumulate(op, x, 1)
 
 Cumulative operation `op` on `A` along the dimension `dim`, storing the result in `B`.
 See also [`accumulate`](@ref).
+
+# Examples
+```jldoctest
+julia> A = [1 2; 3 4]
+2×2 Array{Int64,2}:
+ 1  2
+ 3  4
+
+julia> B = [0 0; 0 0]
+2×2 Array{Int64,2}:
+ 0  0
+ 0  0
+
+julia> accumulate!(-, B, A, 1);
+
+julia> B
+2×2 Array{Int64,2}:
+  1   2
+ -2  -2
+
+julia> accumulate!(-, B, A, 2);
+
+julia> B
+2×2 Array{Int64,2}:
+ 1  -1
+ 3  -1
+```
 """
 function accumulate!(op, B, A, dim::Integer)
     dim > 0 || throw(ArgumentError("dim must be a positive integer"))
@@ -911,6 +938,25 @@ end
 
 Cumulative operation `op` on a vector `x`, storing the result in `y`.
 See also [`accumulate`](@ref).
+
+# Examples
+``jldoctest
+julia> x = SparseVector(7, [1, 3, 5], [2., 4., 5.]);
+
+julia> y = zeros(7);
+
+julia> accumulate!(+, y, x);
+
+julia> y
+7-element Array{Float64,1}:
+  2.0
+  2.0
+  6.0
+  6.0
+ 11.0
+ 11.0
+ 11.0
+```
 """
 function accumulate!(op::Op, y, x::AbstractVector) where Op
     isempty(x) && return y
@@ -1025,6 +1071,29 @@ end
     copy!(dest, src) -> dest
 
 Copy all elements from collection `src` to array `dest`.
+
+# Examples
+```jldoctest
+julia> x = SparseVector(7, [1, 3, 5], [2., 4., 5.])
+7-element SparseVector{Float64,Int64} with 3 stored entries:
+  [1]  =  2.0
+  [3]  =  4.0
+  [5]  =  5.0
+
+julia> y = zeros(7);
+
+julia> copy!(y, x);
+
+julia> y
+7-element Array{Float64,1}:
+ 2.0
+ 0.0
+ 4.0
+ 0.0
+ 5.0
+ 0.0
+ 0.0
+```
 """
 copy!(dest, src)
 
