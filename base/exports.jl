@@ -910,6 +910,8 @@ export
 
 # types
     convert,
+    getfield,
+    setfield!,
     fieldoffset,
     fieldname,
     fieldnames,

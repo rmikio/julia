@@ -2,7 +2,7 @@
 
 Main.Core.eval(Main.Core, :(baremodule Inference
 using Core.Intrinsics
-import Core: print, println, show, write, unsafe_write, STDOUT, STDERR
+import Core: print, println, show, write, unsafe_write, STDOUT, STDERR, getfield, setfield!
 
 ccall(:jl_set_istopmod, Void, (Any, Bool), Inference, false)
 

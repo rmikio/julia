@@ -3,6 +3,16 @@
 baremodule Base
 
 using Core.Intrinsics
+getfield(x, f) = Core.getfield(x, f)
+setfield!(x, f, v) = Core.setfield!(x, f, convert(Core.fieldtype(Core.typeof(x), f), v))
+
+getfield(x::Module, f::Symbol) = Core.getfield(x, f)
+setfield!(x::Module, f::Symbol, v) = Core.setfield!(x, f, v)
+getfield(x::Type, f::Symbol) = Core.getfield(x, f)
+setfield!(x::Type, f::Symbol, v) = Core.setfield!(x, f, v)
+getfield(x::Type, f::Int) = Core.getfield(x, f)
+setfield!(x::Type, f::Int, v) = Core.setfield!(x, f, v)
+
 ccall(:jl_set_istopmod, Void, (Any, Bool), Base, true)
 
 function include(mod::Module, path::AbstractString)

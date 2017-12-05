@@ -35,10 +35,10 @@ another named tuple.
 function NamedTuple{names}(nt::NamedTuple) where {names}
     if @generated
         types = Tuple{(fieldtype(nt, n) for n in names)...}
-        Expr(:new, :(NamedTuple{names, $types}), Any[ :(getfield(nt, $(QuoteNode(n)))) for n in names ]...)
+        Expr(:new, :(NamedTuple{names, $types}), Any[ :(Core.getfield(nt, $(QuoteNode(n)))) for n in names ]...)
     else
         types = Tuple{(fieldtype(typeof(nt), n) for n in names)...}
-        NamedTuple{names, types}(Tuple(getfield(nt, n) for n in names))
+        NamedTuple{names, types}(Tuple(Core.getfield(nt, n) for n in names))
     end
 end
 
@@ -47,11 +47,11 @@ end # if Base
 length(t::NamedTuple) = nfields(t)
 start(t::NamedTuple) = 1
 done(t::NamedTuple, iter) = iter > nfields(t)
-next(t::NamedTuple, iter) = (getfield(t, iter), iter + 1)
+next(t::NamedTuple, iter) = (Core.getfield(t, iter), iter + 1)
 endof(t::NamedTuple) = nfields(t)
-getindex(t::NamedTuple, i::Int) = getfield(t, i)
-getindex(t::NamedTuple, i::Symbol) = getfield(t, i)
-indexed_next(t::NamedTuple, i::Int, state) = (getfield(t, i), i+1)
+getindex(t::NamedTuple, i::Int) = Core.getfield(t, i)
+getindex(t::NamedTuple, i::Symbol) = Core.getfield(t, i)
+indexed_next(t::NamedTuple, i::Int, state) = (Core.getfield(t, i), i+1)
 isempty(::NamedTuple{()}) = true
 isempty(::NamedTuple) = false
 
@@ -66,7 +66,7 @@ function show(io::IO, t::NamedTuple)
     n = nfields(t)
     for i = 1:n
         # if field types aren't concrete, show full type
-        if typeof(getfield(t, i)) !== fieldtype(typeof(t), i)
+        if typeof(Core.getfield(t, i)) !== fieldtype(typeof(t), i)
             show(io, typeof(t))
             print(io, "(")
             show(io, Tuple(t))
@@ -79,7 +79,7 @@ function show(io::IO, t::NamedTuple)
     else
         print(io, "(")
         for i = 1:n
-            print(io, fieldname(typeof(t),i), " = "); show(io, getfield(t, i))
+            print(io, fieldname(typeof(t),i), " = "); show(io, Core.getfield(t, i))
             if n == 1
                 print(io, ",")
             elseif i < n
@@ -118,7 +118,7 @@ function map(f, nt::NamedTuple{names}, nts::NamedTuple...) where names
     if @generated
         N = length(names)
         M = length(nts)
-        args = Expr[:(f($(Expr[:(getfield(nt, $j)), (:(getfield(nts[$i], $j)) for i = 1:M)...]...))) for j = 1:N]
+        args = Expr[:(f($(Expr[:(Core.getfield(nt, $j)), (:(Core.getfield(nts[$i], $j)) for i = 1:M)...]...))) for j = 1:N]
         :( NT(($(args...),)) )
     else
         NT(map(f, map(Tuple, (nt, nts...))...))
@@ -164,12 +164,12 @@ function merge(a::NamedTuple{an}, b::NamedTuple{bn}) where {an, bn}
     if @generated
         names = merge_names(an, bn)
         types = merge_types(names, a, b)
-        vals = Any[ :(getfield($(sym_in(n, bn) ? :b : :a), $(QuoteNode(n)))) for n in names ]
+        vals = Any[ :(Core.getfield($(sym_in(n, bn) ? :b : :a), $(QuoteNode(n)))) for n in names ]
         :( NamedTuple{$names,$types}(($(vals...),)) )
     else
         names = merge_names(an, bn)
         types = merge_types(names, typeof(a), typeof(b))
-        NamedTuple{names,types}(map(n->getfield(sym_in(n, bn) ? b : a, n), names))
+        NamedTuple{names,types}(map(n->Core.getfield(sym_in(n, bn) ? b : a, n), names))
     end
 end
 
@@ -205,8 +205,8 @@ end
 keys(nt::NamedTuple{names}) where {names} = names
 values(nt::NamedTuple) = Tuple(nt)
 haskey(nt::NamedTuple, key::Union{Integer, Symbol}) = isdefined(nt, key)
-get(nt::NamedTuple, key::Union{Integer, Symbol}, default) = haskey(nt, key) ? getfield(nt, key) : default
-get(f::Callable, nt::NamedTuple, key::Union{Integer, Symbol}) = haskey(nt, key) ? getfield(nt, key) : f()
+get(nt::NamedTuple, key::Union{Integer, Symbol}, default) = haskey(nt, key) ? Core.getfield(nt, key) : default
+get(f::Callable, nt::NamedTuple, key::Union{Integer, Symbol}) = haskey(nt, key) ? Core.getfield(nt, key) : f()
 
 @pure function diff_names(an::Tuple{Vararg{Symbol}}, bn::Tuple{Vararg{Symbol}})
     names = Symbol[]
@@ -228,11 +228,11 @@ function structdiff(a::NamedTuple{an}, b::Union{NamedTuple{bn}, Type{NamedTuple{
     if @generated
         names = diff_names(an, bn)
         types = Tuple{Any[ fieldtype(a, n) for n in names ]...}
-        vals = Any[ :(getfield(a, $(QuoteNode(n)))) for n in names ]
+        vals = Any[ :(Core.getfield(a, $(QuoteNode(n)))) for n in names ]
         :( NamedTuple{$names,$types}(($(vals...),)) )
     else
         names = diff_names(an, bn)
         types = Tuple{Any[ fieldtype(typeof(a), n) for n in names ]...}
-        NamedTuple{names,types}(map(n->getfield(a, n), names))
+        NamedTuple{names,types}(map(n->Core.getfield(a, n), names))
     end
 end

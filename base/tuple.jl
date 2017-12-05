@@ -18,8 +18,8 @@ NTuple
 length(t::Tuple) = nfields(t)
 endof(t::Tuple) = length(t)
 size(t::Tuple, d) = (d == 1) ? length(t) : throw(ArgumentError("invalid tuple dimension $d"))
-@eval getindex(t::Tuple, i::Int) = getfield(t, i, $(Expr(:boundscheck)))
-@eval getindex(t::Tuple, i::Real) = getfield(t, convert(Int, i), $(Expr(:boundscheck)))
+@eval getindex(t::Tuple, i::Int) = Core.getfield(t, i, $(Expr(:boundscheck)))
+@eval getindex(t::Tuple, i::Real) = Core.getfield(t, convert(Int, i), $(Expr(:boundscheck)))
 getindex(t::Tuple, r::AbstractArray{<:Any,1}) = ([t[ri] for ri in r]...,)
 getindex(t::Tuple, b::AbstractArray{Bool,1}) = length(b) == length(t) ? getindex(t, find(b)) : throw(BoundsError(t, b))
 
