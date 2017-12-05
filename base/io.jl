@@ -84,7 +84,20 @@ Read a single value of type `T` from `stream`, in canonical binary representatio
 
     read(stream::IO, String)
 
-Read the entirety of `stream`, as a String.
+Read the entirety of `stream`, as a `String`.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> read(io, Char)
+'J': ASCII/Unicode U+004a (category Lu: Letter, uppercase)
+
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> read(io, String)
+"JuliaLang is a GitHub organization"
+```
 """
 read(stream, t)
 
@@ -99,6 +112,23 @@ You can write multiple values with the same `write` call. i.e. the following are
 
     write(stream, x, y...)
     write(stream, x) + write(stream, y...)
+
+# Examples
+```jldoctest
+julia> io = IOBuffer();
+
+julia> write(io, "JuliaLang is a GitHub organization.", "It has many members.")
+55
+
+julia> String(take!(io))
+"JuliaLang is a GitHub organization.It has many members."
+
+julia> write(io, "Sometimes those members") + write(io, " write documentation.")
+44
+
+julia> String(take!(io))
+"Sometimes those members write documentation."
+```
 """
 function write end
 
@@ -170,6 +200,14 @@ wait_close(io::AbstractPipe) = (wait_close(pipe_writer(io)); wait_close(pipe_rea
     nb_available(stream)
 
 Return the number of bytes available for reading before a read from this stream or buffer will block.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> nb_available(io)
+34
+```
 """
 nb_available(io::AbstractPipe) = nb_available(pipe_reader(io))
 
@@ -329,6 +367,19 @@ htol(x)
     isreadonly(stream) -> Bool
 
 Determine whether a stream is read-only.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> isreadonly(io)
+true
+
+julia> io = IOBuffer();
+
+julia> isreadonly(io)
+false
+```
 """
 isreadonly(s) = isreadable(s) && !iswritable(s)
 
@@ -757,6 +808,7 @@ Advance the stream `io` such that the next-read character will be the first rema
 which `predicate` returns `false`. If the keyword argument `linecomment` is specified, all
 characters from that character until the start of the next line are ignored.
 
+# Examples
 ```jldoctest
 julia> buf = IOBuffer("    text")
 IOBuffer(data=UInt8[...], readable=true, writable=false, seekable=true, append=false, size=8, maxsize=Inf, ptr=1, mark=-1)
@@ -787,6 +839,22 @@ end
 Read `io` until the end of the stream/file and count the number of lines. To specify a file
 pass the filename as the first argument. EOL markers other than `'\\n'` are supported by
 passing them as the second argument.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization.\n");
+
+julia> countlines(io)
+1
+
+julia> io = IOBuffer("JuliaLang is a GitHub organization.");
+
+julia> countlines(io)
+0
+
+julia> countlines(io, '.')
+1
+```
 """
 function countlines(io::IO, eol::Char='\n')
     isascii(eol) || throw(ArgumentError("only ASCII line terminators are supported"))

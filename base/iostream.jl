@@ -62,6 +62,16 @@ end
     seek(s, pos)
 
 Seek a stream to the given position.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> seek(io, 5);
+
+julia> read(io, Char)
+'L': ASCII/Unicode U+004c (category Lu: Letter, uppercase)
+```
 """
 function seek(s::IOStream, n::Integer)
     ret = ccall(:ios_seek, Int64, (Ptr{Void}, Int64), s.ios, n)
@@ -91,6 +101,19 @@ end
     skip(s, offset)
 
 Seek a stream relative to the current position.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> read(io, Char)
+'J': ASCII/Unicode U+004a (category Lu: Letter, uppercase)
+
+julia> skip(io, 4);
+
+julia> read(io, Char)
+'L': ASCII/Unicode U+004c (category Lu: Letter, uppercase)
+```
 """
 function skip(s::IOStream, delta::Integer)
     ret = ccall(:ios_skip, Int64, (Ptr{Void}, Int64), s.ios, delta)
@@ -103,6 +126,20 @@ end
     position(s)
 
 Get the current position of a stream.
+
+# Examples
+```jldoctest
+julia> io = IOBuffer("JuliaLang is a GitHub organization");
+
+julia> position(io)
+0
+
+julia> read(io, Char)
+'J': ASCII/Unicode U+004a (category Lu: Letter, uppercase)
+
+julia> position(io)
+1
+```
 """
 function position(s::IOStream)
     pos = ccall(:ios_pos, Int64, (Ptr{Void},), s.ios)
